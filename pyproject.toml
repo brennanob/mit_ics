@@ -1,0 +1,140 @@
+# Setuptools is a fully-featured, actively-maintained, and stable library designed to facilitate packaging Python
+# projects.
+
+# DON'T FORGET TO CHANGE THE PACKAGE NAME AS NEEDED WHEN CUSTOMIZING FOR A NEW PROJECT.
+
+# Layout
+# [Build system]
+#    Requires setuptools and setuptools_scm w/ toml
+#    Specify setuptools build backend
+# [Project]
+#    Project metadata;
+#    Python >=3.10
+#    Dependencies: click
+#    dynamic versioning -- see setuptools_scm
+# Optional dependencies
+#    Pytest, pytest-cov
+# Entry point
+#    Package entry point
+# Package find directive
+#    Looks for sources in 'src'
+# Version control
+#    setuptools-scm extracts Python package versions from git
+#    version file written to src/<package>/_version.py0
+# Pytest and pytest-cov
+#    version specified
+#    'tests' directory specified as test path
+#    '*.egg', 'build', and 'dist' ingnored when searching for tests
+#    coverage report configured for terminal display.  Files with complete coverage are not reported.
+# Tox
+#    tox aims to automate and standardize testing in Python. It is part of a larger vision of easing the packaging,
+#    testing and release process of Python software (alongside pytest and devpi).
+#    clean:  remove old distribution files and build artifacts
+
+
+[build-system]
+requires = ['setuptools>=46.1.0', 'setuptools_scm[toml]>=5']
+build-backend = 'setuptools.build_meta'
+
+[project]
+name = 'project_name'
+description = 'project description'
+authors = [
+    {name = "author"}
+    ]
+requires-python = '>=3.10'
+dependencies = [ ]
+dynamic = ['version']
+
+[project.optional-dependencies]
+test = ['pytest>=8.2', 'pytest-cov>=5.0']
+
+# NOTE THE PACKAGE NAME MAY NEED TO BE CHANGED.
+#[project.scripts]
+#entry = 'src.exercises.skeleton:entry_point'
+
+[tool.setuptools.packages.find]
+where = ['src']
+
+# NOTE THE PACKAGE NAME MAY NEED TO BE CHANGED.
+[tool.setuptools_scm]
+version_file = 'src/exercises/_version.py'
+
+# Configuration of pytest and pytest-cov
+# NOTE THE PACKAGE NAME MAY NEED TO BE CHANGED.
+[tool.pytest.ini_options]
+minversion ='8.2'
+addopts = "--cov=exercises --cov-report term-missing:skip-covered"
+testpaths = 'tests'
+norecursedirs = '*.egg build dist'
+
+[tool.coverage.run]
+omit = ['_version.py',]
+
+[tool.tox]
+legacy_tox_ini = """
+[tox]
+requires =
+     tox>=3.24
+     virtualenv>=20.26
+envlist = clean, lint, type, py{310, 312}
+skip_missing_interpreters = true
+[testenv]
+description = run unit test
+setenv =
+    TOXINIDIR = {toxinidir}
+deps =
+    pytest>=8.2.2
+    pytest-cov>=5.0
+extras =
+    testing
+commands =
+    pytest {posargs:tests}
+
+[testenv:clean]
+description = remove old distribution files and temporary build artifacts (./build and ./dist)
+changedir = {toxinidir}
+commands =
+    clean: python -c 'import shutil; [shutil.rmtree(p, True) for p in ("build", "dist", "docs/_build")]'
+    clean: python -c 'import pathlib, shutil; [shutil.rmtree(p, True) for p in pathlib.Path("src").glob("*.egg-info")]'
+
+[testenv:type]
+description = run type checks
+deps =
+    mypy>=1.10.0
+    pytest>=8.2.2
+commands =
+    mypy {posargs: src tests}
+
+[testenv:lint]
+description = run linter
+deps =
+    black>=24.4.0
+commands = black src tests
+
+#[testenv:{docs,doctests,linkcheck}]
+#description =
+#    docs: Invoke sphinx-build to build the docs
+#    doctests: Invoke sphinx-build to run doctests
+#    linkcheck: Check for broken links in the documentation
+#setenv =
+#    DOCSDIR = {toxinidir}/docs
+#    BUILDDIR = {toxinidir}/docs/_build
+#    docs: BUILD = html
+#    doctests: BUILD = doctest
+#    linkcheck: BUILD = linkcheck
+#deps =
+#    -r {toxinidir}/docs/requirements.txt
+#commands =
+#    sphinx-build --color -b {env:BUILD} -d "{env:BUILDDIR}/doctrees" "{env:DOCSDIR}" "{env:BUILDDIR}/{env:BUILD}" {posargs}
+#
+#[testenv:build]
+## By default, both `sdist` and `wheel` are built. If your sdist is too big or you don't want
+## to make it available, consider running: `tox -e build -- --wheel`
+#description = build the package in isolation according to PEP517.
+#deps =
+#    build: build[virtualenv]
+#commands =
+#    build: python -m build {posargs}
+"""
+
